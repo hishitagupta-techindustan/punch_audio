@@ -1,185 +1,439 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Punch Combo Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  .app { padding: 1.5rem 0; font-family: var(--font-sans); }
-  .title { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 0.25rem; }
-  .subtitle { font-size: 14px; color: var(--color-text-secondary); margin: 0 0 1.5rem; }
-  .section-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px; }
-  .punch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-bottom: 1.5rem; }
-  .punch-btn { border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); border-radius: var(--border-radius-md); padding: 10px 6px; cursor: pointer; text-align: center; transition: transform 0.08s, background 0.1s; user-select: none; }
-  .punch-btn:hover { background: var(--color-background-secondary); }
-  .punch-btn:active { transform: scale(0.95); }
-  .punch-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
-  .punch-btn .name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
-  .punch-btn .key { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
-  .sequence-area { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 1rem 1.25rem; min-height: 80px; margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
-  .seq-chip { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 4px 10px; font-size: 13px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; cursor: default; animation: pop 0.12s ease; }
-  .seq-chip.playing { border-color: #378ADD; color: #185FA5; background: #E6F1FB; }
-  @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .empty-hint { font-size: 13px; color: var(--color-text-secondary); align-self: center; }
-  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .btn-primary { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px 18px; font-size: 14px; font-weight: 500; color: var(--color-text-primary); cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  .btn-primary:hover { background: var(--color-background-secondary); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-danger { border-color: #E24B4A; color: #A32D2D; }
-  .btn-danger:hover { background: #FCEBEB; }
-  .tempo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
-  .tempo-row label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
-  .tempo-row input[type=range] { flex: 1; }
-  .tempo-row span { font-size: 13px; font-weight: 500; min-width: 60px; color: var(--color-text-primary); }
-  .visualizer { display: flex; align-items: flex-end; gap: 3px; height: 48px; margin-bottom: 1rem; }
-  .bar { flex: 1; background: var(--color-border-tertiary); border-radius: 2px; transition: height 0.05s, background 0.05s; min-height: 4px; }
-  .bar.active { background: #378ADD; }
-  .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .preset-chip { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; }
-  .preset-chip:hover { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-secondary); }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #e8ff3c;
+    --accent2: #ff4d1c;
+    --text: #f0f0f0;
+    --muted: #888;
+    --jab: #5bc4ff;
+    --cross: #ff5c5c;
+    --hook: #4dffb4;
+    --upper: #ffd166;
+    --body: #c47aff;
+    --slip: #aaaaaa;
+    --block: #7ec8ff;
+    --rest: #555555;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .header {
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .header .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Punch grid */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .punch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .punch-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 6px 10px;
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s, border-color 0.1s;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .punch-btn:active { transform: scale(0.92); }
+  .punch-btn .emoji { font-size: 24px; display: block; margin-bottom: 5px; line-height: 1; }
+  .punch-btn .pname { font-size: 11px; font-weight: 500; color: var(--text); display: block; }
+  .punch-btn .pkey {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    display: block;
+    font-family: monospace;
+  }
+  .punch-btn[data-id="jab"] { border-color: var(--jab); }
+  .punch-btn[data-id="cross"] { border-color: var(--cross); }
+  .punch-btn[data-id="hook"] { border-color: var(--hook); }
+  .punch-btn[data-id="upper"] { border-color: var(--upper); }
+  .punch-btn[data-id="body"] { border-color: var(--body); }
+  .punch-btn[data-id="slip"] { border-color: var(--slip); }
+  .punch-btn[data-id="block"] { border-color: var(--block); }
+  .punch-btn[data-id="rest"] { border-color: var(--rest); }
+  .punch-btn.flashed { background: var(--surface2); }
+
+  /* Presets */
+  .preset-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .preset-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .preset-pill:active { color: var(--accent); border-color: var(--accent); }
+
+  /* Sequence tape */
+  .seq-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    min-height: 72px;
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: flex-start;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .seq-empty {
+    font-size: 13px;
+    color: var(--muted);
+    align-self: center;
+    width: 100%;
+    text-align: center;
+    line-height: 2.5;
+  }
+  .chip {
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    animation: chipIn 0.12s ease;
+    transition: background 0.1s, border-color 0.1s, transform 0.1s;
+  }
+  .chip.playing {
+    background: #1a1f00;
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.08);
+  }
+  @keyframes chipIn {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* Visualizer */
+  .visualizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 36px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .vbar {
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    min-height: 3px;
+    transition: height 0.08s, background 0.08s;
+  }
+  .vbar.active { background: var(--accent); }
+
+  /* Tempo */
+  .tempo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .tempo-row label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .tempo-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  .tempo-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .tempo-row input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+  }
+  .tempo-val {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 58px;
+    text-align: right;
+    font-family: monospace;
+  }
+
+  /* Controls */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .btn {
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 13px 16px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.1s, background 0.1s;
+  }
+  .btn:active { transform: scale(0.95); }
+  .btn-play {
+    background: var(--accent);
+    color: #0d0d0d;
+    border-color: var(--accent);
+    font-size: 15px;
+  }
+  .btn-play:disabled { opacity: 0.5; }
+  .btn-icon { font-size: 18px; }
+  .btn-sm { padding: 13px; }
+
+  .status-bar {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding-bottom: 20px;
+  }
+  .status-bar span { color: var(--accent); font-weight: 600; }
 </style>
+</head>
+<body>
 
-<div class="app">
-  <h2 class="sr-only">Punch audio sequence generator — add punches to build a combo and play it back</h2>
-  <p class="title">Punch sequence generator</p>
-  <p class="subtitle">Build a combo, set the tempo, and play it back as audio.</p>
+<div class="header">
+  <div>
+    <h1>PUNCH<br>COMBO</h1>
+  </div>
+  <div class="sub">Build a combo → play as audio</div>
+</div>
 
-  <p class="section-label">Punch types</p>
+<div class="main">
+
+  <p class="section-title">Punches</p>
   <div class="punch-grid" id="punchGrid"></div>
 
-  <p class="section-label">Presets</p>
-  <div class="preset-row" id="presets"></div>
+  <p class="section-title">Presets</p>
+  <div class="preset-row" id="presetRow"></div>
 
-  <p class="section-label">Sequence</p>
-  <div class="sequence-area" id="seqArea"><span class="empty-hint">Tap a punch above or use keyboard shortcuts</span></div>
-
-  <div class="tempo-row">
-    <label>Tempo</label>
-    <input type="range" id="tempo" min="40" max="200" step="1" value="90">
-    <span id="tempoOut">90 BPM</span>
+  <p class="section-title">Sequence (<span id="seqCount">0</span>)</p>
+  <div class="seq-wrap" id="seqArea">
+    <div class="seq-empty">Tap punches above to build your combo</div>
   </div>
 
   <div class="visualizer" id="viz"></div>
 
-  <div class="controls">
-    <button class="btn-primary" id="playBtn"><i class="ti ti-player-play" aria-hidden="true"></i> Play combo</button>
-    <button class="btn-primary" id="undoBtn"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Undo</button>
-    <button class="btn-primary btn-danger" id="clearBtn"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+  <div class="tempo-row">
+    <label>Tempo</label>
+    <input type="range" id="tempo" min="40" max="220" step="1" value="100">
+    <div class="tempo-val" id="tempoVal">100 BPM</div>
   </div>
+
+  <div class="controls">
+    <button class="btn btn-play" id="playBtn" onclick="playSequence()">
+      <span id="playIcon">▶</span> <span id="playLabel">Play Combo</span>
+    </button>
+    <button class="btn btn-sm" onclick="undoLast()" title="Undo">↩</button>
+    <button class="btn btn-sm" onclick="clearAll()" title="Clear">✕</button>
+  </div>
+
+  <div class="status-bar" id="statusBar">Tap a punch or press <span>1-5</span> on keyboard</div>
+
 </div>
 
 <script>
-const punches = [
-  { id:'jab',    name:'Jab',         key:'1', color:[0.1, 0.6, 0.9],  emoji:'👊', freq:180, dur:0.07, gain:0.7 },
-  { id:'cross',  name:'Cross',       key:'2', color:[0.9, 0.3, 0.1],  emoji:'✊', freq:140, dur:0.10, gain:0.9 },
-  { id:'hook',   name:'Hook',        key:'3', color:[0.2, 0.8, 0.3],  emoji:'🤜', freq:110, dur:0.13, gain:1.0 },
-  { id:'upper',  name:'Uppercut',    key:'4', color:[0.8, 0.6, 0.1],  emoji:'👆', freq:90,  dur:0.16, gain:1.0 },
-  { id:'body',   name:'Body shot',   key:'5', color:[0.6, 0.2, 0.8],  emoji:'💢', freq:70,  dur:0.18, gain:0.85},
-  { id:'slip',   name:'Slip',        key:'S', color:[0.5, 0.5, 0.5],  emoji:'↔️', freq:400, dur:0.05, gain:0.35},
-  { id:'block',  name:'Block',       key:'B', color:[0.3, 0.5, 0.7],  emoji:'🛡', freq:300, dur:0.08, gain:0.4 },
-  { id:'rest',   name:'Rest',        key:'R', color:[0.4, 0.4, 0.4],  emoji:'⏸', freq:0,   dur:0.00, gain:0.0 },
+const PUNCHES = [
+  { id:'jab',   name:'Jab',      key:'1', emoji:'👊', freq:200, gain:0.65, dur:0.07, color:'var(--jab)'   },
+  { id:'cross', name:'Cross',    key:'2', emoji:'✊', freq:150, gain:0.85, dur:0.10, color:'var(--cross)' },
+  { id:'hook',  name:'Hook',     key:'3', emoji:'🤜', freq:110, gain:0.95, dur:0.13, color:'var(--hook)'  },
+  { id:'upper', name:'Uppercut', key:'4', emoji:'⬆️', freq:85,  gain:1.00, dur:0.16, color:'var(--upper)' },
+  { id:'body',  name:'Body',     key:'5', emoji:'💢', freq:65,  gain:0.90, dur:0.18, color:'var(--body)'  },
+  { id:'slip',  name:'Slip',     key:'S', emoji:'↔️', freq:500, gain:0.30, dur:0.05, color:'var(--slip)'  },
+  { id:'block', name:'Block',    key:'B', emoji:'🛡', freq:320, gain:0.40, dur:0.08, color:'var(--block)' },
+  { id:'rest',  name:'Rest',     key:'R', emoji:'⏸', freq:0,   gain:0.00, dur:0.00, color:'var(--rest)'  },
 ];
 
-const presets = [
-  { name: '1-2', seq: ['jab','cross'] },
-  { name: '1-2-3', seq: ['jab','cross','hook'] },
-  { name: '1-2-3-2', seq: ['jab','cross','hook','cross'] },
-  { name: '1-1-2', seq: ['jab','jab','cross'] },
-  { name: 'Body-Head', seq: ['body','body','cross','hook'] },
-  { name: '1-2-Upper', seq: ['jab','cross','upper'] },
+const PRESETS = [
+  { name:'1-2',        seq:['jab','cross'] },
+  { name:'1-2-3',      seq:['jab','cross','hook'] },
+  { name:'1-1-2',      seq:['jab','jab','cross'] },
+  { name:'1-2-3-2',    seq:['jab','cross','hook','cross'] },
+  { name:'Body-Head',  seq:['body','body','cross','hook'] },
+  { name:'1-2-Upper',  seq:['jab','cross','upper'] },
+  { name:'Slip-Cross', seq:['slip','cross','hook'] },
 ];
 
 let sequence = [];
 let audioCtx = null;
 let playing = false;
-let stopRequested = false;
-let bars = [];
+let vizBars = [];
 
-function getAudioCtx() {
+function getCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
-function makeNoise(ctx, dur) {
-  const len = Math.ceil(ctx.sampleRate * dur);
+function makeNoiseBuf(ctx, seconds) {
+  const len = Math.ceil(ctx.sampleRate * seconds);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
   const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   return buf;
 }
 
-function playPunchSound(p, when, ctx) {
+function makeDistCurve(amount) {
+  const n = 256, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    c[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  }
+  return c;
+}
+
+function playPunch(p, when, ctx) {
   if (p.freq === 0) return;
-  const g = ctx.createGain();
+
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(p.gain, when);
+  master.gain.exponentialRampToValueAtTime(0.001, when + p.dur + 0.09);
+  master.connect(ctx.destination);
+
+  // Noise thump
+  const noiseLen = p.dur + 0.1;
+  const noiseSrc = ctx.createBufferSource();
+  noiseSrc.buffer = makeNoiseBuf(ctx, noiseLen);
+  const nf = ctx.createBiquadFilter();
+  nf.type = 'bandpass';
+  nf.frequency.setValueAtTime(p.freq * 2.5, when);
+  nf.frequency.exponentialRampToValueAtTime(p.freq * 0.4, when + p.dur + 0.06);
+  nf.Q.value = 1.5;
   const dist = ctx.createWaveShaper();
-  const curve = new Float32Array(256);
-  for (let i=0;i<256;i++) { const x=i/128-1; curve[i]=x*(Math.PI+200)/(Math.PI+200*Math.abs(x)); }
-  dist.curve = curve;
+  dist.curve = makeDistCurve(180);
+  noiseSrc.connect(nf); nf.connect(dist); dist.connect(master);
+  noiseSrc.start(when); noiseSrc.stop(when + noiseLen + 0.01);
 
-  const noiseSource = ctx.createBufferSource();
-  noiseSource.buffer = makeNoise(ctx, p.dur + 0.06);
-
-  const filt = ctx.createBiquadFilter();
-  filt.type = 'bandpass';
-  filt.frequency.setValueAtTime(p.freq * 2.2, when);
-  filt.frequency.exponentialRampToValueAtTime(p.freq * 0.5, when + p.dur + 0.04);
-  filt.Q.value = 1.2;
-
+  // Tonal thud
   const osc = ctx.createOscillator();
   osc.type = 'sine';
   osc.frequency.setValueAtTime(p.freq, when);
-  osc.frequency.exponentialRampToValueAtTime(p.freq * 0.3, when + p.dur * 0.6);
-
-  const oscGain = ctx.createGain();
-  oscGain.gain.setValueAtTime(p.gain * 0.5, when);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, when + p.dur * 0.7);
-
-  g.gain.setValueAtTime(p.gain, when);
-  g.gain.exponentialRampToValueAtTime(0.001, when + p.dur + 0.06);
-
-  noiseSource.connect(filt); filt.connect(dist); dist.connect(g);
-  osc.connect(oscGain); oscGain.connect(g);
-  g.connect(ctx.destination);
-
-  noiseSource.start(when); noiseSource.stop(when + p.dur + 0.1);
-  osc.start(when); osc.stop(when + p.dur + 0.1);
-}
-
-function buildGrid() {
-  const grid = document.getElementById('punchGrid');
-  grid.innerHTML = '';
-  punches.forEach(p => {
-    const btn = document.createElement('button');
-    btn.className = 'punch-btn';
-    btn.innerHTML = `<span class="icon">${p.emoji}</span><span class="name">${p.name}</span><span class="key">[${p.key}]</span>`;
-    btn.onclick = () => addPunch(p);
-    grid.appendChild(btn);
-  });
-}
-
-function buildPresets() {
-  const row = document.getElementById('presets');
-  row.innerHTML = '';
-  presets.forEach(pr => {
-    const chip = document.createElement('button');
-    chip.className = 'preset-chip';
-    chip.textContent = pr.name;
-    chip.onclick = () => { sequence = pr.seq.map(id => punches.find(p=>p.id===id)); renderSeq(); };
-    row.appendChild(chip);
-  });
+  osc.frequency.exponentialRampToValueAtTime(p.freq * 0.25, when + p.dur * 0.65);
+  const og = ctx.createGain();
+  og.gain.setValueAtTime(p.gain * 0.45, when);
+  og.gain.exponentialRampToValueAtTime(0.001, when + p.dur * 0.7);
+  osc.connect(og); og.connect(ctx.destination);
+  osc.start(when); osc.stop(when + p.dur + 0.05);
 }
 
 function addPunch(p) {
   sequence.push(p);
   renderSeq();
-  const ctx = getAudioCtx();
-  playPunchSound(p, ctx.currentTime, ctx);
+  // Play preview sound
+  const ctx = getCtx();
+  playPunch(p, ctx.currentTime, ctx);
+  flashBtn(p.id);
+}
+
+function flashBtn(id) {
+  const btn = document.querySelector(`.punch-btn[data-id="${id}"]`);
+  if (!btn) return;
+  btn.classList.add('flashed');
+  setTimeout(() => btn.classList.remove('flashed'), 150);
 }
 
 function renderSeq() {
   const area = document.getElementById('seqArea');
+  document.getElementById('seqCount').textContent = sequence.length;
+  if (!sequence.length) {
+    area.innerHTML = '<div class="seq-empty">Tap punches above to build your combo</div>';
+    renderViz(); return;
+  }
   area.innerHTML = '';
-  if (!sequence.length) { area.innerHTML = '<span class="empty-hint">Tap a punch above or use keyboard shortcuts</span>'; renderViz(); return; }
   sequence.forEach((p, i) => {
     const chip = document.createElement('div');
-    chip.className = 'seq-chip';
-    chip.id = 'chip-'+i;
-    chip.innerHTML = `${p.emoji} ${p.name}`;
+    chip.className = 'chip';
+    chip.id = 'chip-' + i;
+    chip.style.borderColor = p.color;
+    chip.innerHTML = `<span>${p.emoji}</span><span>${p.name}</span>`;
     area.appendChild(chip);
   });
   renderViz();
@@ -188,63 +442,112 @@ function renderSeq() {
 function renderViz() {
   const viz = document.getElementById('viz');
   viz.innerHTML = '';
-  bars = [];
-  const n = Math.max(sequence.length, 8);
-  for (let i=0; i<n; i++) {
+  vizBars = [];
+  const n = Math.max(sequence.length, 12);
+  for (let i = 0; i < n; i++) {
     const b = document.createElement('div');
-    b.className = 'bar';
-    const h = i < sequence.length ? (sequence[i].gain * 40 + 8) : 8;
-    b.style.height = h+'px';
+    b.className = 'vbar';
+    const h = i < sequence.length ? Math.round(sequence[i].gain * 30 + 6) : 6;
+    b.style.height = h + 'px';
     viz.appendChild(b);
-    bars.push(b);
+    vizBars.push(b);
   }
 }
 
 async function playSequence() {
   if (!sequence.length || playing) return;
-  playing = true; stopRequested = false;
+  playing = true;
   const btn = document.getElementById('playBtn');
+  const lbl = document.getElementById('playLabel');
+  const icon = document.getElementById('playIcon');
   btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Playing…';
+  lbl.textContent = 'Playing…';
+  icon.textContent = '⏵';
 
-  const ctx = getAudioCtx();
+  const ctx = getCtx();
   const bpm = parseInt(document.getElementById('tempo').value);
-  const beatMs = (60000 / bpm);
+  const beatMs = Math.round(60000 / bpm);
 
   for (let i = 0; i < sequence.length; i++) {
-    if (stopRequested) break;
     const p = sequence[i];
-    const chip = document.getElementById('chip-'+i);
+    const chip = document.getElementById('chip-' + i);
     if (chip) chip.classList.add('playing');
-    if (bars[i]) { bars[i].classList.add('active'); }
-    playPunchSound(p, ctx.currentTime, ctx);
-    await new Promise(r => setTimeout(r, beatMs));
+    if (vizBars[i]) vizBars[i].classList.add('active');
+    playPunch(p, ctx.currentTime, ctx);
+    await sleep(beatMs);
     if (chip) chip.classList.remove('playing');
-    if (bars[i]) bars[i].classList.remove('active');
+    if (vizBars[i]) vizBars[i].classList.remove('active');
   }
 
   playing = false;
   btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-player-play" aria-hidden="true"></i> Play combo';
+  lbl.textContent = 'Play Combo';
+  icon.textContent = '▶';
+  setStatus('Combo done! 🥊');
 }
 
-document.getElementById('playBtn').onclick = playSequence;
-document.getElementById('clearBtn').onclick = () => { sequence = []; renderSeq(); };
-document.getElementById('undoBtn').onclick = () => { if (sequence.length) { sequence.pop(); renderSeq(); } };
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-document.getElementById('tempo').oninput = function() {
-  document.getElementById('tempoOut').textContent = this.value + ' BPM';
-};
+function undoLast() {
+  if (!sequence.length) return;
+  sequence.pop();
+  renderSeq();
+}
 
+function clearAll() {
+  sequence = [];
+  renderSeq();
+}
+
+function setStatus(msg) {
+  document.getElementById('statusBar').textContent = msg;
+}
+
+// Build UI
+function buildGrid() {
+  const grid = document.getElementById('punchGrid');
+  PUNCHES.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'punch-btn';
+    btn.setAttribute('data-id', p.id);
+    btn.innerHTML = `<span class="emoji">${p.emoji}</span><span class="pname">${p.name}</span><span class="pkey">[${p.key}]</span>`;
+    btn.addEventListener('click', () => addPunch(p));
+    grid.appendChild(btn);
+  });
+}
+
+function buildPresets() {
+  const row = document.getElementById('presetRow');
+  PRESETS.forEach(pr => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-pill';
+    btn.textContent = pr.name;
+    btn.addEventListener('click', () => {
+      sequence = pr.seq.map(id => PUNCHES.find(p => p.id === id));
+      renderSeq();
+      setStatus(`Loaded preset: ${pr.name}`);
+    });
+    row.appendChild(btn);
+  });
+}
+
+// Keyboard
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
-  const key = e.key.toUpperCase();
-  const p = punches.find(p => p.key === key);
+  if (e.key === ' ') { e.preventDefault(); playSequence(); return; }
+  const k = e.key.toUpperCase();
+  const p = PUNCHES.find(x => x.key === k);
   if (p) addPunch(p);
-  if (e.key === ' ') { e.preventDefault(); playSequence(); }
+});
+
+// Tempo display
+document.getElementById('tempo').addEventListener('input', function() {
+  document.getElementById('tempoVal').textContent = this.value + ' BPM';
 });
 
 buildGrid();
 buildPresets();
 renderViz();
 </script>
+</body>
+</html>
